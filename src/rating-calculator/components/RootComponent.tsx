@@ -48,7 +48,7 @@ const MessagesByLang = {
   },
   [Language.ko_KR]: {
     computeRating: '레이팅 계산하기',
-    previousVerHeader: "신곡 레이팅 후보",
+    previousVerHeader: "신곡 레이팅",
     includePrev: "이전 버전 2개 포함",
     dontIncludePrev: "최신 버전만 쓰기"
   },
@@ -275,6 +275,7 @@ export const RootComponent = () => {
           ratingData={ratingData}
           playerGradeIndex={playerGradeIndex}
           allSongs={allSongs}
+          includePreviousVerInNewCharts={usePreviousVers}
         />
       )}
       <hr className="sectionSep" />

@@ -35,6 +35,7 @@ interface Props {
   ratingData: RatingData;
   playerGradeIndex: number;
   allSongs?: ReadonlyArray<BasicSongProps>;
+  includePreviousVerInNewCharts?: boolean;
 }
 
 interface State {
@@ -51,10 +52,13 @@ export const RatingOutput = ({
   gameRegion,
   playerGradeIndex,
   songDatabase,
+  includePreviousVerInNewCharts
 }: Props) => {
   const state = useMemo<State>(() => {
     // Since CiRCLE, charts debuted in the previous version (PRiSM PLUS) are treated as new charts.
-    const minVersionForNewSongs = gameVer >= GameVersion.CiRCLE ? gameVer - 1 : gameVer;
+    if (includePreviousVerInNewCharts == null) {includePreviousVerInNewCharts = gameVer >= GameVersion.CiRCLE;}
+    const minVersionForNewSongs = includePreviousVerInNewCharts ? gameVer - 1 : gameVer;
+
     const allSongProps = allSongs
       ? songDatabase.getPropsForSongs(allSongs)
       : gameRegion === GameRegion.Jp
