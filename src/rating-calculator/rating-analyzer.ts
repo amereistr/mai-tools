@@ -64,9 +64,11 @@ export function analyzePlayerRating(
   gameRegion: GameRegion,
   gameVer: GameVersion,
   excludeSongsWithNoProps: boolean,
+  includePreviousVerInNewCharts: boolean | null
 ): RatingData {
   // Since CiRCLE, charts debuted in the previous version (PRiSM PLUS) are treated as new charts.
-  const includePreviousVerInNewCharts = gameVer >= GameVersion.CiRCLE;
+  if (includePreviousVerInNewCharts == null) {includePreviousVerInNewCharts = gameVer >= GameVersion.CiRCLE;}
+
   const newChartRecords = [];
   const oldChartRecords = [];
   const removedSongs = getRemovedSongs(gameRegion, gameVer);

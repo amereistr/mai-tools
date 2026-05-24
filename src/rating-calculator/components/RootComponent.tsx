@@ -32,15 +32,25 @@ import {RegionSelect} from './RegionSelect';
 import {ScoreInput} from './ScoreInput';
 import {VersionSelect} from './VersionSelect';
 
+// TODO: update other langs
 const MessagesByLang = {
   [Language.en_US]: {
     computeRating: 'Calculate Rating',
+    previousVerHeader: "New Charts Rating",
+    includePrev: "Include 2 previous versions",
+    dontIncludePrev: "Only use latest version"
   },
   [Language.zh_TW]: {
     computeRating: '計算 Rating 值',
+    previousVerHeader: "新譜面 Rating",
+    includePrev: "包含前 2 個版本",
+    dontIncludePrev: "只用最新版本"
   },
   [Language.ko_KR]: {
     computeRating: '레이팅 계산하기',
+    previousVerHeader: "신곡 레이팅 후보",
+    includePrev: "이전 버전 2개 포함",
+    dontIncludePrev: "최신 버전만 쓰기"
   },
 };
 
@@ -72,6 +82,7 @@ export const RootComponent = () => {
   const [lvOverrides, setLvOverrides] = useState(() => loadLvOverrides());
   const [progress, setProgress] = useState('');
   const [gameVer, setGameVer] = useState(latestGameVer);
+  const [usePreviousVers, setUsePreviousVers] = useState(gameVer >= GameVersion.CiRCLE);
   const [allSongs, setAllSongs] = useState<ReadonlyArray<BasicSongProps> | undefined>(undefined);
   const ratingData = useMemo<RatingData>(
     () =>
@@ -84,8 +95,9 @@ export const RootComponent = () => {
         songDatabase,
         lvOverrides,
         playerScores,
+        usePreviousVers,
       ),
-    [date, playerName, latestGameVer, gameVer, region, songDatabase, lvOverrides, playerScores],
+    [date, playerName, latestGameVer, gameVer, region, songDatabase, lvOverrides, playerScores, usePreviousVers],
   );
 
   useEffect(() => {
@@ -135,6 +147,7 @@ export const RootComponent = () => {
             RATING_CALCULATOR_SUPPORTED_VERSIONS[RATING_CALCULATOR_SUPPORTED_VERSIONS.length - 1],
           ),
         );
+        setUsePreviousVers(evt.data.payload >= GameVersion.CiRCLE);
         break;
       case 'playerGrade':
         const gradeIndex = parseInt(evt.data.payload);
@@ -200,6 +213,13 @@ export const RootComponent = () => {
     }
   }, []);
 
+  const handlePreviousVersionsChange = useCallback(
+    (evt: React.SyntheticEvent<HTMLInputElement>) => {
+      setUsePreviousVers(evt.currentTarget.value == "includePrev");
+    },
+    [usePreviousVers]
+  );
+
   const messages = MessagesByLang[lang];
   return (
     <LangContext.Provider value={lang}>
@@ -217,6 +237,35 @@ export const RootComponent = () => {
           {messages.computeRating}
         </button>
       </div>
+
+      <div className="w90">
+        <h2 className="previousVerHeading">{messages.previousVerHeader}</h2>
+        <form className="">
+          <label className="radioLabel">
+            <input
+              className="radioInput"
+              name="includePrev"
+              value="includePrev"
+              type="radio"
+              checked={usePreviousVers}
+              onChange={handlePreviousVersionsChange}
+            />
+            {messages.includePrev}
+          </label>
+          <label className="radioLabel">
+            <input
+              className="radioInput"
+              name="dontIncludePrev"
+              value="dontIncludePrev"
+              type="radio"
+              checked={!usePreviousVers}
+              onChange={handlePreviousVersionsChange}
+            />
+            {messages.dontIncludePrev}
+          </label>
+        </form>
+      </div>
+
       {progress ? <p>{progress}</p> : null}
       {ratingData && songDatabase && (
         <RatingOutput
@@ -246,6 +295,7 @@ function createRatingData(
   songDb: SongDatabase | undefined,
   lvOverrides: Partial<SongProperties>[],
   records: ChartRecord[],
+  usePreviousVers: boolean
 ): RatingData | null {
   if (!songDb || songDb.gameVer !== targetGameVer || songDb.region !== targetRegion) {
     // song database for the target version/region is still loading
@@ -268,6 +318,7 @@ function createRatingData(
     targetRegion,
     targetGameVer,
     targetGameVer < latestGameVer,
+    usePreviousVers
   );
   console.log('Rating Data:', ratingData);
   return ratingData;

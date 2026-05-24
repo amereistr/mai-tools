@@ -22,6 +22,7 @@ textarea:focus {
   outline-width: 2px;
 }
 
+.previousVerHeading,
 .lvInputHeading,
 .scoreInputHeading {
   margin-bottom: 10px;
